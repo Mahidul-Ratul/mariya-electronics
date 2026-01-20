@@ -1,0 +1,1547 @@
+@extends('layout.app')
+
+@section('title', 'Create Invoice')
+@section('page-title', 'Create Invoice')
+
+@section('header-actions')
+    <a href="{{ route('sales.index') }}" class="btn btn-outline-secondary d-flex align-items-center">
+        <i class="fas fa-arrow-left me-2"></i> Back to Sales
+    </a>
+@endsection
+
+@section('content')
+<!-- Help Notice -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-info border-0 shadow-sm">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-lightbulb fa-2x text-warning me-3"></i>
+                <div>
+                    <h6 class="mb-1">Dual Product Selection Modes</h6>
+                    <p class="mb-0 small">
+                        <strong>Select from List:</strong> Choose from existing products with dropdown and advanced filters • 
+                        <strong>Manual Entry:</strong> Add custom products with manual details entry • 
+                        Switch between modes using the toggle buttons in Product Selection section
+                    </p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="bg-white bg-opacity-20 rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                         style="width: 40px; height: 40px; flex-shrink: 0;">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">Invoice Creation</h5>
+                        <small class="opacity-75 d-none d-sm-block">Create comprehensive sales invoice</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ route('sales.store') }}" id="invoiceForm">
+                    @csrf
+                    
+                    <div class="row">
+                        <!-- Customer Information Section -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-header bg-transparent border-bottom-0">
+                                    <h6 class="mb-0 text-primary"><i class="fas fa-user me-2"></i>Customer Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="customer_name" class="form-label">Customer Name</label>
+                                        <input type="text" class="form-control" id="customer_name" name="customer_name" 
+                                               placeholder="Enter customer name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="customer_address" class="form-label">Address</label>
+                                        <textarea class="form-control" id="customer_address" name="customer_address" 
+                                                  rows="2" placeholder="Enter customer address"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="customer_mobile" class="form-label">Mobile Number</label>
+                                        <input type="text" class="form-control" id="customer_mobile" name="customer_mobile" 
+                                               placeholder="Enter mobile number">
+                                    </div>
+                                    
+                                    <!-- Guarantor Section -->
+                                    <div class="border-top pt-3">
+                                        <h6 class="mb-3 text-secondary"><i class="fas fa-user-shield me-2"></i>Guarantor Information</h6>
+                                        <div class="mb-3">
+                                            <label for="guarantor_name" class="form-label">Guarantor Name</label>
+                                            <input type="text" class="form-control" id="guarantor_name" name="guarantor_name" 
+                                                   placeholder="Enter guarantor name">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="guarantor_mobile" class="form-label">Guarantor Mobile</label>
+                                            <input type="text" class="form-control" id="guarantor_mobile" name="guarantor_mobile" 
+                                                   placeholder="Enter guarantor mobile">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Selection Section -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-header bg-transparent border-bottom-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0 text-success"><i class="fas fa-shopping-cart me-2"></i>Product Selection</h6>
+                                            <small class="text-muted">Search and filter products to add to invoice</small>
+                                        </div>
+                                        <button type="button" class="btn btn-link btn-sm text-muted" data-bs-toggle="tooltip" 
+                                                title="Shortcuts: Ctrl+F to search, Enter to add selected product, Esc to clear selection">
+                                            <i class="fas fa-keyboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Selection Mode Toggle -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold mb-2">
+                                            <i class="fas fa-toggle-on me-1"></i>Product Entry Mode
+                                        </label>
+                                        <div class="btn-group w-100" role="group" aria-label="Selection mode">
+                                            <input type="radio" class="btn-check" name="selection_mode" id="mode_select" value="select" checked>
+                                            <label class="btn btn-outline-primary btn-lg" for="mode_select">
+                                                <i class="fas fa-list me-2"></i>Select from Existing Products
+                                                <br><small class="d-block">Choose from inventory</small>
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check" name="selection_mode" id="mode_manual" value="manual">
+                                            <label class="btn btn-outline-success btn-lg" for="mode_manual">
+                                                <i class="fas fa-edit me-2"></i>Manual Product Entry
+                                                <br><small class="d-block">Add custom product</small>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Select from List Mode -->
+                                    <div id="select_mode_section">
+                                        <!-- Product Dropdown -->
+                                        <div class="mb-3">
+                                            <label for="product_select" class="form-label fw-bold">Select Product</label>
+                                            <select class="form-select form-select-lg" id="product_select" onchange="selectProductFromDropdown()">
+                                                <option value="">Choose a product...</option>
+                                                @foreach($products as $product)
+                                                    <option value="{{ $product->id }}" 
+                                                            data-name="{{ $product->name }}"
+                                                            data-model="{{ $product->model ?? '' }}"
+                                                            data-price="{{ $product->selling_price }}"
+                                                            data-stock="{{ $product->stock_quantity }}"
+                                                            data-category="{{ $product->category->name ?? '' }}"
+                                                            data-brand="{{ $product->brand->name ?? '' }}"
+                                                            {{ $product->stock_quantity == 0 ? 'disabled' : '' }}>
+                                                        {{ $product->name }} 
+                                                        @if($product->model) - {{ $product->model }} @endif
+                                                        (৳{{ number_format($product->selling_price, 2) }})
+                                                        @if($product->stock_quantity == 0) - OUT OF STOCK @endif
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <small class="text-muted">Products are grouped by availability. Out of stock items are disabled.</small>
+                                        </div>
+
+                                        <!-- Advanced Search (Collapsible) -->
+                                        <div class="mb-3">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" 
+                                                    data-bs-target="#advancedSearch" aria-expanded="false">
+                                                <i class="fas fa-search me-1"></i>Advanced Search & Filters
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="collapse" id="advancedSearch">
+                                            <div class="card card-body bg-white border mb-3">
+                                                <div class="row g-2 mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label small fw-bold">Category</label>
+                                                        <select class="form-select form-select-sm" id="filter_category" onchange="filterDropdownOptions()">
+                                                            <option value="">All Categories</option>
+                                                            @foreach($categories as $category)
+                                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label small fw-bold">Brand</label>
+                                                        <select class="form-select form-select-sm" id="filter_brand" onchange="filterDropdownOptions()">
+                                                            <option value="">All Brands</option>
+                                                            @foreach($brands as $brand)
+                                                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="row g-2">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label small fw-bold">Model</label>
+                                                        <select class="form-select form-select-sm" id="filter_model" onchange="filterDropdownOptions()">
+                                                            <option value="">All Models</option>
+                                                            @php
+                                                                $uniqueModels = $products->whereNotNull('model')->pluck('model')->unique()->sort();
+                                                            @endphp
+                                                            @foreach($uniqueModels as $model)
+                                                                <option value="{{ $model }}">{{ $model }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label small fw-bold">Product Name</label>
+                                                        <select class="form-select form-select-sm" id="filter_name" onchange="filterDropdownOptions()">
+                                                            <option value="">All Products</option>
+                                                            @php
+                                                                $uniqueNames = $products->pluck('name')->unique()->sort();
+                                                            @endphp
+                                                            @foreach($uniqueNames as $name)
+                                                                <option value="{{ $name }}">{{ $name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <button type="button" class="btn btn-sm btn-secondary" onclick="clearAllFilters()">
+                                                            <i class="fas fa-eraser me-1"></i>Clear All Filters
+                                                        </button>
+                                                        <small class="text-muted ms-2">Filters update the dropdown automatically</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Manual Entry Mode -->
+                                    <div id="manual_mode_section" style="display: none;">
+                                        <div class="alert alert-info border-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Manual Entry Mode:</strong> Enter product details manually for custom items or new products.
+                                        </div>
+                                        
+                                        <div class="card bg-white border">
+                                            <div class="card-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-12">
+                                                        <label for="manual_product_name" class="form-label fw-bold">Product Name *</label>
+                                                        <input type="text" class="form-control" id="manual_product_name" 
+                                                               placeholder="Enter product name" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="manual_product_model" class="form-label fw-bold">Model Name</label>
+                                                        <input type="text" class="form-control" id="manual_product_model" 
+                                                               placeholder="Enter model name (optional)">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="manual_product_price" class="form-label fw-bold">Unit Price (৳) *</label>
+                                                        <input type="number" class="form-control" id="manual_product_price" 
+                                                               placeholder="0.00" step="0.01" min="0" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="manual_category" class="form-label fw-bold">Category</label>
+                                                        <select class="form-select" id="manual_category">
+                                                            <option value="">Select category (optional)</option>
+                                                            @foreach($categories as $category)
+                                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="manual_brand" class="form-label fw-bold">Brand</label>
+                                                        <select class="form-select" id="manual_brand">
+                                                            <option value="">Select brand (optional)</option>
+                                                            @foreach($brands as $brand)
+                                                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <label for="manual_product_quantity" class="form-label fw-bold">Quantity *</label>
+                                                        <div class="input-group">
+                                                            <button type="button" class="btn btn-outline-secondary" onclick="decreaseManualQuantity()">
+                                                                <i class="fas fa-minus"></i>
+                                                            </button>
+                                                            <input type="number" class="form-control text-center" id="manual_product_quantity" 
+                                                                   placeholder="1" min="1" value="1" required>
+                                                            <button type="button" class="btn btn-outline-secondary" onclick="increaseManualQuantity()">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 d-flex align-items-end">
+                                                        <button type="button" class="btn btn-success w-100" onclick="addManualProduct()" id="add_manual_btn">
+                                                            <i class="fas fa-plus-circle me-2"></i>Add Product
+                                                        </button>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label for="manual_product_description" class="form-label fw-bold">Description</label>
+                                                        <textarea class="form-control" id="manual_product_description" rows="2" 
+                                                                  placeholder="Additional product description (optional)"></textarea>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Product Preview -->
+                                                <div id="manual_product_preview" class="mt-3 d-none">
+                                                    <div class="alert alert-light border border-success">
+                                                        <h6 class="text-success mb-2">
+                                                            <i class="fas fa-eye me-2"></i>Product Preview
+                                                        </h6>
+                                                        <div id="manual_preview_content"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Selected Product Details (for dropdown selection mode) -->
+                                    <div id="selected_product_details" class="d-none">
+                                        <div class="card bg-primary bg-opacity-10 border-primary mt-3">
+                                            <div class="card-body p-3">
+                                                <h6 class="card-title text-primary mb-2">
+                                                    <i class="fas fa-box me-2"></i>Selected Product Details
+                                                </h6>
+                                                <div class="row g-2 align-items-end">
+                                                    <div class="col-md-8">
+                                                        <div id="selected_product_info"></div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label for="product_quantity" class="form-label small fw-bold">Quantity</label>
+                                                        <div class="input-group input-group-sm">
+                                                            <button type="button" class="btn btn-outline-secondary" onclick="decreaseQuantity()">
+                                                                <i class="fas fa-minus"></i>
+                                                            </button>
+                                                            <input type="number" class="form-control text-center" id="product_quantity" 
+                                                                   value="1" min="1" onchange="updateProductTotal()">
+                                                            <button type="button" class="btn btn-outline-secondary" onclick="increaseQuantity()">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                        <button type="button" class="btn btn-primary btn-sm mt-2 w-100" onclick="addProduct()">
+                                                            <i class="fas fa-cart-plus me-1"></i>Add to Invoice
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Products List -->
+                    <div class="card border-0 mb-4">
+                        <div class="card-header bg-transparent border-bottom">
+                            <h6 class="mb-0 text-info"><i class="fas fa-list me-2"></i>Selected Products</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="products_table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Price</th>
+                                            <th>Qty</th>
+                                            <th>Total</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="products_list">
+                                        <tr id="no_products">
+                                            <td colspan="5" class="text-center text-muted py-4">
+                                                <i class="fas fa-shopping-cart fa-2x mb-2 d-block"></i>
+                                                No products added yet
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totals and Payment -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-header bg-transparent border-bottom-0">
+                                    <h6 class="mb-0 text-warning"><i class="fas fa-calculator me-2"></i>Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Subtotal:</span>
+                                        <span class="fw-bold" id="subtotal_display">৳0.00</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="discount_amount" class="form-label">Discount Amount (৳)</label>
+                                        <input type="number" class="form-control" id="discount_amount" name="discount_amount" 
+                                               placeholder="0.00" step="0.01" value="0" onchange="calculateTotals()">
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="h6">Final Total:</span>
+                                        <span class="h5 text-success fw-bold" id="final_total_display">৳0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-header bg-transparent border-bottom-0">
+                                    <h6 class="mb-0 text-danger"><i class="fas fa-credit-card me-2"></i>Payment Options</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_type" 
+                                                   id="payment_regular" value="regular" checked onchange="togglePaymentType()">
+                                            <label class="form-check-label" for="payment_regular">
+                                                <i class="fas fa-money-bill text-success me-1"></i>Regular Payment
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_type" 
+                                                   id="payment_installment" value="installment" onchange="togglePaymentType()">
+                                            <label class="form-check-label" for="payment_installment">
+                                                <i class="fas fa-calendar-alt text-warning me-1"></i>Installment Payment
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="installment_section" style="display: none;">
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-md-6">
+                                                <label for="paid_amount" class="form-label">Paid Amount (৳)</label>
+                                                <input type="number" class="form-control" id="paid_amount" name="paid_amount" 
+                                                       placeholder="0.00" step="0.01" onchange="calculateInstallments()">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="installment_months" class="form-label">Months</label>
+                                                <select class="form-select" id="installment_months" name="installment_months" onchange="calculateInstallments()">
+                                                    @for($i = 1; $i <= 24; $i++)
+                                                        <option value="{{ $i }}">{{ $i }} Month(s)</option>
+                                                    @endfor
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-info small">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Monthly Amount: <span class="fw-bold" id="monthly_amount">৳0.00</span><br>
+                                            <small class="text-muted">Fine: ৳500 will be added if payment is delayed by more than 1 month</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden inputs for form submission -->
+                    <input type="hidden" name="products_data" id="products_data">
+                    <input type="hidden" name="subtotal" id="subtotal_hidden">
+                    <input type="hidden" name="total_amount" id="total_amount_hidden">
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-file-invoice me-2"></i>Create Invoice
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#product_suggestions .list-group-item {
+    cursor: pointer;
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#product_suggestions .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.product-card {
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.product-card:hover:not(.opacity-50) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+
+.product-card.selected {
+    border-color: #28a745 !important;
+    background-color: #f8fff8;
+}
+
+.list-group-item {
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover:not(.opacity-50) {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-group .btn.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.btn-check:checked + .btn-outline-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.btn-check:checked + .btn-outline-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+#mode_select:checked + label {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+}
+
+#mode_manual:checked + label {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: white !important;
+}
+
+#select_mode_section {
+    min-height: 200px;
+    transition: all 0.3s ease;
+    border-left: 4px solid #007bff;
+    padding-left: 15px;
+    margin-left: 5px;
+}
+
+#manual_mode_section {
+    min-height: 200px;
+    transition: all 0.3s ease;
+    border-left: 4px solid #28a745;
+    padding-left: 15px;
+    margin-left: 5px;
+}
+
+.mode-section-hidden {
+    display: none !important;
+}
+
+.mode-section-visible {
+    display: block !important;
+}
+
+#quick_search_results .alert {
+    margin-bottom: 0.5rem;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+
+<script>
+// Test function for manual debugging
+function testModeSwitch(mode) {
+    console.log('=== MANUAL TEST MODE SWITCH ===');
+    console.log('Testing mode:', mode);
+    toggleSelectionMode(mode);
+}
+
+// Debug function to check current state
+function debugCurrentState() {
+    console.log('=== CURRENT STATE DEBUG ===');
+    const selectSection = document.getElementById('select_mode_section');
+    const manualSection = document.getElementById('manual_mode_section');
+    const radios = document.querySelectorAll('input[name="selection_mode"]');
+    
+    console.log('Radio buttons:');
+    radios.forEach(radio => {
+        console.log(`  ${radio.id}: value=${radio.value}, checked=${radio.checked}`);
+    });
+    
+    console.log('Sections:');
+    if (selectSection) {
+        console.log(`  Select section: display=${getComputedStyle(selectSection).display}, classes="${selectSection.className}"`);
+    }
+    if (manualSection) {
+        console.log(`  Manual section: display=${getComputedStyle(manualSection).display}, classes="${manualSection.className}"`);
+    }
+}
+
+let products = [];
+let allProducts = []; // Temporarily disabled: @json($products);
+let selectedProductId = null;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOM Content Loaded ===');
+    
+    // Check if radio buttons exist
+    const radios = document.querySelectorAll('input[name="selection_mode"]');
+    console.log('Found radio buttons:', radios.length);
+    radios.forEach((radio, index) => {
+        console.log(`Radio ${index}: id=${radio.id}, value=${radio.value}, checked=${radio.checked}`);
+    });
+    
+    // Mode switching
+    radios.forEach(radio => {
+        console.log('Adding event listener to:', radio.id);
+        radio.addEventListener('change', function() {
+            console.log('=== RADIO CHANGE EVENT ===');
+            console.log('Radio changed:', this.id, 'value:', this.value, 'checked:', this.checked);
+            toggleSelectionMode(this.value);
+        });
+        
+        // Also add click listener as backup
+        radio.addEventListener('click', function() {
+            console.log('=== RADIO CLICK EVENT ===');
+            console.log('Radio clicked:', this.id, 'value:', this.value, 'checked:', this.checked);
+            setTimeout(() => toggleSelectionMode(this.value), 10);
+        });
+    });
+    
+    // Initialize with select mode
+    console.log('Initializing with select mode');
+    toggleSelectionMode('select');
+    
+    // Check initial state of sections
+    const selectSection = document.getElementById('select_mode_section');
+    const manualSection = document.getElementById('manual_mode_section');
+    console.log('Initial select section display:', selectSection ? getComputedStyle(selectSection).display : 'not found');
+    console.log('Initial manual section display:', manualSection ? getComputedStyle(manualSection).display : 'not found');
+    
+    // Add event listeners for manual form inputs to update preview
+    const manualInputs = ['manual_product_name', 'manual_product_model', 'manual_product_price', 
+                         'manual_product_quantity', 'manual_category', 'manual_brand', 'manual_product_description'];
+    
+    manualInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', updateManualPreview);
+            input.addEventListener('change', updateManualPreview);
+        }
+    });
+});
+
+// Toggle between selection modes
+function toggleSelectionMode(mode) {
+    console.log('=== TOGGLE SELECTION MODE ===');
+    console.log('Called with mode:', mode);
+    
+    const selectSection = document.getElementById('select_mode_section');
+    const manualSection = document.getElementById('manual_mode_section');
+    
+    console.log('Select section element:', selectSection);
+    console.log('Manual section element:', manualSection);
+    
+    if (selectSection) {
+        console.log('Select section current display:', getComputedStyle(selectSection).display);
+        console.log('Select section current classes:', selectSection.className);
+    }
+    if (manualSection) {
+        console.log('Manual section current display:', getComputedStyle(manualSection).display);
+        console.log('Manual section current classes:', manualSection.className);
+    }
+    
+    if (mode === 'select') {
+        console.log('Switching to SELECT mode');
+        if (selectSection) {
+            selectSection.classList.remove('mode-section-hidden');
+            selectSection.classList.add('mode-section-visible');
+            console.log('Select section classes after:', selectSection.className);
+            console.log('Select section display after:', getComputedStyle(selectSection).display);
+        }
+        if (manualSection) {
+            manualSection.classList.add('mode-section-hidden');
+            manualSection.classList.remove('mode-section-visible');
+            console.log('Manual section classes after:', manualSection.className);
+            console.log('Manual section display after:', getComputedStyle(manualSection).display);
+        }
+        clearManualForm();
+        clearSelection();
+    } else if (mode === 'manual') {
+        console.log('Switching to MANUAL mode');
+        if (selectSection) {
+            selectSection.classList.add('mode-section-hidden');
+            selectSection.classList.remove('mode-section-visible');
+            console.log('Select section classes after:', selectSection.className);
+            console.log('Select section display after:', getComputedStyle(selectSection).display);
+        }
+        if (manualSection) {
+            manualSection.classList.remove('mode-section-hidden');
+            manualSection.classList.add('mode-section-visible');
+            console.log('Manual section classes after:', manualSection.className);
+            console.log('Manual section display after:', getComputedStyle(manualSection).display);
+        }
+        clearSelection();
+    }
+    console.log('=== END TOGGLE SELECTION MODE ===');
+}
+
+// Select product from dropdown
+function selectProductFromDropdown() {
+    const select = document.getElementById('product_select');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (select.value) {
+        selectedProductId = select.value;
+        const product = {
+            id: select.value,
+            name: selectedOption.dataset.name,
+            model: selectedOption.dataset.model,
+            price: parseFloat(selectedOption.dataset.price),
+            stock: parseInt(selectedOption.dataset.stock),
+            category: selectedOption.dataset.category,
+            brand: selectedOption.dataset.brand
+        };
+        
+        // Show selected product details
+        showSelectedProductDetails(product);
+    } else {
+        clearSelection();
+    }
+}
+
+// Show selected product details
+function showSelectedProductDetails(product) {
+    const detailsContainer = document.getElementById('selected_product_details');
+    const infoContainer = document.getElementById('selected_product_info');
+    
+    infoContainer.innerHTML = `
+        <h6 class="mb-1">${product.name}</h6>
+        <div class="row g-1 small">
+            <div class="col-6"><strong>Price:</strong> ৳${product.price.toFixed(2)}</div>
+            <div class="col-6"><strong>Stock:</strong> ${product.stock}</div>
+            ${product.model ? `<div class="col-6"><strong>Model:</strong> ${product.model}</div>` : ''}
+            ${product.category ? `<div class="col-6"><strong>Category:</strong> ${product.category}</div>` : ''}
+            ${product.brand ? `<div class="col-12"><strong>Brand:</strong> ${product.brand}</div>` : ''}
+        </div>
+    `;
+    
+    detailsContainer.classList.remove('d-none');
+    
+    // Set max quantity based on stock
+    const quantityInput = document.getElementById('product_quantity');
+    quantityInput.max = product.stock;
+    quantityInput.value = 1;
+    
+    // Scroll to selected product section
+    detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Filter dropdown options
+function filterDropdownOptions() {
+    const categoryId = document.getElementById('filter_category').value;
+    const brandId = document.getElementById('filter_brand').value;
+    const model = document.getElementById('filter_model').value;
+    const name = document.getElementById('filter_name').value;
+    
+    const select = document.getElementById('product_select');
+    const options = select.querySelectorAll('option');
+    
+    options.forEach((option, index) => {
+        if (index === 0) return; // Skip the first "Choose a product..." option
+        
+        let show = true;
+        const product = allProducts[index - 1]; // Adjust for the first option
+        
+        if (categoryId && product.category_id != categoryId) show = false;
+        if (brandId && product.brand_id != brandId) show = false;
+        if (model && product.model !== model) show = false;
+        if (name && product.name !== name) show = false;
+        
+        option.style.display = show ? '' : 'none';
+    });
+    
+    // Reset selection if current selection is hidden
+    if (select.selectedIndex > 0 && options[select.selectedIndex].style.display === 'none') {
+        select.selectedIndex = 0;
+        clearSelection();
+    }
+}
+
+// Clear all filters
+function clearAllFilters() {
+    document.getElementById('filter_category').selectedIndex = 0;
+    document.getElementById('filter_brand').selectedIndex = 0;
+    document.getElementById('filter_model').selectedIndex = 0;
+    document.getElementById('filter_name').selectedIndex = 0;
+    
+    // Show all options
+    const options = document.getElementById('product_select').querySelectorAll('option');
+    options.forEach(option => {
+        option.style.display = '';
+    });
+}
+
+// Manual quantity controls
+function increaseManualQuantity() {
+    const quantityInput = document.getElementById('manual_product_quantity');
+    const currentVal = parseInt(quantityInput.value) || 1;
+    quantityInput.value = currentVal + 1;
+    updateManualPreview();
+}
+
+function decreaseManualQuantity() {
+    const quantityInput = document.getElementById('manual_product_quantity');
+    const currentVal = parseInt(quantityInput.value) || 1;
+    if (currentVal > 1) {
+        quantityInput.value = currentVal - 1;
+        updateManualPreview();
+    }
+}
+
+// Update manual product preview
+function updateManualPreview() {
+    const name = document.getElementById('manual_product_name').value.trim();
+    const model = document.getElementById('manual_product_model').value.trim();
+    const price = parseFloat(document.getElementById('manual_product_price').value) || 0;
+    const quantity = parseInt(document.getElementById('manual_product_quantity').value) || 1;
+    const categorySelect = document.getElementById('manual_category');
+    const brandSelect = document.getElementById('manual_brand');
+    const description = document.getElementById('manual_product_description').value.trim();
+    
+    const previewContainer = document.getElementById('manual_product_preview');
+    const previewContent = document.getElementById('manual_preview_content');
+    
+    if (name && price > 0) {
+        const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
+        const brandName = brandSelect.options[brandSelect.selectedIndex].text;
+        const total = price * quantity;
+        
+        previewContent.innerHTML = `
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <strong>${name}</strong>${model ? ` - ${model}` : ''}
+                    ${description ? `<br><small class="text-muted">${description}</small>` : ''}
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="fw-bold text-success">৳${total.toFixed(2)}</div>
+                    <small class="text-muted">${quantity} × ৳${price.toFixed(2)}</small>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted">
+                        ${categoryName !== "Select category (optional)" ? `Category: ${categoryName} • ` : ""}
+                        ${brandName !== "Select brand (optional)" ? `Brand: ${brandName}` : ""}
+                    </small>
+                </div>
+            </div>
+        `;
+        previewContainer.classList.remove('d-none');
+    } else {
+        previewContainer.classList.add('d-none');
+    }
+}
+
+// Clear selection
+function clearSelection() {
+    selectedProductId = null;
+    document.getElementById('product_select').selectedIndex = 0;
+    document.getElementById('selected_product_details').classList.add('d-none');
+    document.getElementById('product_quantity').value = 1;
+}
+
+// Clear manual form
+function clearManualForm() {
+    const fields = [
+        'manual_product_name',
+        'manual_product_model', 
+        'manual_product_price',
+        'manual_product_quantity',
+        'manual_product_description'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            if (fieldId === 'manual_product_quantity') {
+                field.value = '1';
+            } else {
+                field.value = '';
+            }
+        }
+    });
+    
+    // Reset select dropdowns
+    const categorySelect = document.getElementById('manual_category');
+    const brandSelect = document.getElementById('manual_brand');
+    
+    if (categorySelect) categorySelect.selectedIndex = 0;
+    if (brandSelect) brandSelect.selectedIndex = 0;
+    
+    // Hide preview
+    const previewContainer = document.getElementById('manual_product_preview');
+    if (previewContainer) previewContainer.classList.add('d-none');
+}
+
+// Quantity controls
+function increaseQuantity() {
+    const quantityInput = document.getElementById('product_quantity');
+    const currentVal = parseInt(quantityInput.value) || 1;
+    const maxVal = parseInt(quantityInput.max) || 999;
+    
+    if (currentVal < maxVal) {
+        quantityInput.value = currentVal + 1;
+        updateProductTotal();
+    }
+}
+
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('product_quantity');
+    const currentVal = parseInt(quantityInput.value) || 1;
+    
+    if (currentVal > 1) {
+        quantityInput.value = currentVal - 1;
+        updateProductTotal();
+    }
+}
+
+function updateProductTotal() {
+    // This function can be used to show real-time total if needed
+}
+
+// Add product from dropdown selection
+function addProduct() {
+    if (!selectedProductId) {
+        alert('Please select a product first');
+        return;
+    }
+    
+    const product = allProducts.find(p => p.id == selectedProductId);
+    const quantity = parseInt(document.getElementById('product_quantity').value) || 1;
+    
+    if (!product || quantity <= 0) {
+        alert('Please select a valid product and quantity');
+        return;
+    }
+    
+    if (quantity > product.stock_quantity) {
+        alert(`Only ${product.stock_quantity} units available in stock`);
+        return;
+    }
+    
+    addProductToInvoice(product, quantity, false);
+}
+
+// Add manual product
+function addManualProduct() {
+    const name = document.getElementById('manual_product_name').value.trim();
+    const model = document.getElementById('manual_product_model').value.trim();
+    const price = parseFloat(document.getElementById('manual_product_price').value) || 0;
+    const quantity = parseInt(document.getElementById('manual_product_quantity').value) || 1;
+    const description = document.getElementById('manual_product_description').value.trim();
+    const categoryId = document.getElementById('manual_category').value;
+    const brandId = document.getElementById('manual_brand').value;
+    
+    if (!name || price <= 0 || quantity <= 0) {
+        alert('Please fill in all required fields with valid values');
+        return;
+    }
+    
+    // Create manual product object
+    const manualProduct = {
+        id: 'manual_' + Date.now(), // Unique ID for manual products
+        name: name,
+        model: model,
+        selling_price: price,
+        stock_quantity: 999, // Unlimited stock for manual products
+        category: { name: getCategoryName(categoryId) },
+        brand: { name: getBrandName(brandId) },
+        isManual: true,
+        description: description
+    };
+    
+    addProductToInvoice(manualProduct, quantity, true);
+    clearManualForm();
+}
+
+// Helper functions to get category and brand names
+function getCategoryName(categoryId) {
+    if (!categoryId) return '';
+    const categories = @json($categories);
+    const category = categories.find(c => c.id == categoryId);
+    return category ? category.name : '';
+}
+
+function getBrandName(brandId) {
+    if (!brandId) return '';
+    const brands = @json($brands);
+    const brand = brands.find(b => b.id == brandId);
+    return brand ? brand.name : '';
+}
+
+// Common function to add product to invoice
+function addProductToInvoice(product, quantity, isManual = false) {
+    // Check if product already exists in cart
+    const existingProductIndex = products.findIndex(p => 
+        isManual ? p.id === product.id : p.product_id === product.id
+    );
+    
+    if (existingProductIndex !== -1 && !isManual) {
+        // Update existing product quantity (only for non-manual products)
+        const newQuantity = products[existingProductIndex].quantity + quantity;
+        if (newQuantity > product.stock_quantity) {
+            alert(`Cannot add more. Total would exceed available stock (${product.stock_quantity})`);
+            return;
+        }
+        products[existingProductIndex].quantity = newQuantity;
+        products[existingProductIndex].total = products[existingProductIndex].price * newQuantity;
+    } else {
+        // Add new product
+        const productData = {
+            id: isManual ? product.id : Date.now(), // Use product.id for manual products
+            product_id: isManual ? null : product.id,
+            name: product.name,
+            model: product.model || '',
+            price: parseFloat(product.selling_price),
+            quantity: quantity,
+            total: parseFloat(product.selling_price) * quantity,
+            isManual: isManual,
+            description: product.description || ''
+        };
+        products.push(productData);
+    }
+    
+    updateProductsTable();
+    
+    if (!isManual) {
+        clearSelection();
+    }
+    
+    showSuccessMessage(isManual ? 'Manual product added successfully!' : 'Product added to invoice!');
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    const alertHTML = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert alert at top of product selection section
+    const productSection = document.querySelector('.col-lg-6 .card');
+    productSection.insertAdjacentHTML('beforebegin', alertHTML);
+    
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert-success');
+        if (alert) alert.remove();
+    }, 3000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    displayProducts(allProducts);
+    updateProductCount(allProducts.length);
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+F or Alt+F to focus quick search
+        if ((e.ctrlKey || e.altKey) && e.key === 'f') {\n            e.preventDefault();
+            document.getElementById('quick_product_search').focus();
+        }
+        
+        // Escape to clear selection
+        if (e.key === 'Escape') {
+            clearSelection();
+        }
+        
+        // Enter to add product when product is selected
+        if (e.key === 'Enter' && selectedProductId && e.target.id !== 'quick_product_search') {
+            e.preventDefault();
+            addProduct();
+        }
+    });
+    
+    // Auto-focus on quick search
+    document.getElementById('quick_product_search').focus();
+});
+
+// Quick search functionality
+document.getElementById('quick_product_search').addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    
+    if (query.length === 0) {
+        filteredProducts = [...allProducts];
+    } else {
+        filteredProducts = allProducts.filter(product => {
+            return product.name.toLowerCase().includes(query) ||
+                   (product.model && product.model.toLowerCase().includes(query)) ||
+                   (product.brand && product.brand.name && product.brand.name.toLowerCase().includes(query)) ||
+                   (product.category && product.category.name && product.category.name.toLowerCase().includes(query));
+        });
+    }
+    
+    displayProducts(filteredProducts);
+    updateProductCount(filteredProducts.length);
+});
+
+// Apply advanced filters
+function applyFilters() {
+    const categoryId = document.getElementById('filter_category').value;
+    const brandId = document.getElementById('filter_brand').value;
+    const model = document.getElementById('filter_model').value.toLowerCase();
+    const priceMin = parseFloat(document.getElementById('price_min').value) || 0;
+    const priceMax = parseFloat(document.getElementById('price_max').value) || Infinity;
+    const quickSearch = document.getElementById('quick_product_search').value.toLowerCase().trim();
+
+    filteredProducts = allProducts.filter(product => {
+        let matches = true;
+        
+        // Quick search filter
+        if (quickSearch) {
+            matches = matches && (product.name.toLowerCase().includes(quickSearch) ||
+                   (product.model && product.model.toLowerCase().includes(quickSearch)) ||
+                   (product.brand && product.brand.name && product.brand.name.toLowerCase().includes(quickSearch)) ||
+                   (product.category && product.category.name && product.category.name.toLowerCase().includes(quickSearch)));
+        }
+        
+        // Category filter
+        if (categoryId && matches) {
+            matches = matches && product.category_id == categoryId;
+        }
+        
+        // Brand filter
+        if (brandId && matches) {
+            matches = matches && product.brand_id == brandId;
+        }
+        
+        // Model filter
+        if (model && matches) {
+            matches = matches && product.model && product.model.toLowerCase().includes(model);
+        }
+        
+        // Price range filter
+        if (matches) {
+            const price = parseFloat(product.selling_price);
+            matches = matches && price >= priceMin && price <= priceMax;
+        }
+        
+        return matches;
+    });
+    
+    displayProducts(filteredProducts);
+    updateProductCount(filteredProducts.length);
+}
+
+// Clear all filters
+function clearAllFilters() {
+    document.getElementById('quick_product_search').value = '';
+    document.getElementById('filter_category').value = '';
+    document.getElementById('filter_brand').value = '';
+    document.getElementById('filter_model').value = '';
+    document.getElementById('price_min').value = '';
+    document.getElementById('price_max').value = '';
+    
+    filteredProducts = [...allProducts];
+    displayProducts(filteredProducts);
+    updateProductCount(filteredProducts.length);
+}
+
+// Display products in grid or list view
+function displayProducts(productsToShow) {
+    const container = document.getElementById('products_container');
+    
+    if (productsToShow.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-search fa-3x mb-3"></i>
+                <h6>No products found</h6>
+                <p class="mb-0">Try adjusting your search criteria</p>
+            </div>
+        `;
+        return;
+    }
+    
+    if (currentView === 'grid') {
+        displayGridView(productsToShow);
+    } else {
+        displayListView(productsToShow);
+    }
+}
+
+// Grid view display
+function displayGridView(productsToShow) {
+    const container = document.getElementById('products_container');
+    const gridHTML = productsToShow.map(product => {
+        const stockStatus = product.stock_quantity > 0 ? 
+            `<small class="text-success"><i class="fas fa-check-circle"></i> ${product.stock_quantity} in stock</small>` :
+            `<small class="text-danger"><i class="fas fa-times-circle"></i> Out of stock</small>`;
+        
+        return `
+            <div class="col-md-6 col-lg-4 mb-2">
+                <div class="card h-100 product-card ${product.stock_quantity === 0 ? 'opacity-50' : ''}" 
+                     style="cursor: ${product.stock_quantity > 0 ? 'pointer' : 'not-allowed'};"
+                     onclick="${product.stock_quantity > 0 ? `selectProductForInvoice(${product.id})` : ''}">
+                    <div class="card-body p-2">
+                        <h6 class="card-title mb-1 text-truncate" title="${product.name}">${product.name}</h6>
+                        <p class="text-primary fw-bold mb-1">৳${parseFloat(product.selling_price).toFixed(2)}</p>
+                        ${product.model ? `<small class="text-muted d-block">Model: ${product.model}</small>` : ''}
+                        ${stockStatus}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `<div class="row g-2">${gridHTML}</div>`;
+}
+
+// List view display
+function displayListView(productsToShow) {
+    const container = document.getElementById('products_container');
+    const listHTML = productsToShow.map(product => {
+        const stockStatus = product.stock_quantity > 0 ? 
+            `<span class="badge bg-success">Stock: ${product.stock_quantity}</span>` :
+            `<span class="badge bg-danger">Out of stock</span>`;
+        
+        return `
+            <div class="list-group-item list-group-item-action ${product.stock_quantity === 0 ? 'opacity-50' : ''}" 
+                 style="cursor: ${product.stock_quantity > 0 ? 'pointer' : 'not-allowed'};"
+                 onclick="${product.stock_quantity > 0 ? `selectProductForInvoice(${product.id})` : ''}">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">${product.name}</h6>
+                        ${product.model ? `<small class="text-muted">Model: ${product.model}</small>` : ''}
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-primary">৳${parseFloat(product.selling_price).toFixed(2)}</div>
+                        ${stockStatus}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `<div class="list-group">${listHTML}</div>`;
+}
+
+// Set view mode (grid/list)
+function setView(view) {
+    currentView = view;
+    
+    // Update button states
+    document.getElementById('grid_view').classList.toggle('active', view === 'grid');
+    document.getElementById('list_view').classList.toggle('active', view === 'list');
+    
+    displayProducts(filteredProducts);
+}
+
+// Select product for invoice
+function selectProductForInvoice(productId) {
+    selectedProductId = productId;
+    const product = allProducts.find(p => p.id === productId);
+    
+    if (product && product.stock_quantity > 0) {
+        // Show selected product details
+        const detailsContainer = document.getElementById('selected_product_details');
+        const infoContainer = document.getElementById('selected_product_info');
+        
+        infoContainer.innerHTML = `
+            <h6 class="mb-1">${product.name}</h6>
+            <div class="row g-1 text-sm">
+                <div class="col-6"><strong>Price:</strong> ৳${parseFloat(product.selling_price).toFixed(2)}</div>
+                <div class="col-6"><strong>Stock:</strong> ${product.stock_quantity}</div>
+                ${product.model ? `<div class="col-6"><strong>Model:</strong> ${product.model}</div>` : ''}
+                ${product.category ? `<div class="col-6"><strong>Category:</strong> ${product.category.name || 'N/A'}</div>` : ''}
+            </div>
+        `;
+        
+        detailsContainer.classList.remove('d-none');
+        
+        // Set max quantity based on stock
+        const quantityInput = document.getElementById('product_quantity');
+        quantityInput.max = product.stock_quantity;
+        quantityInput.value = 1;
+        
+        // Scroll to selected product section
+        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+// Quantity controls
+function increaseQuantity() {
+    const quantityInput = document.getElementById('product_quantity');
+    const currentVal = parseInt(quantityInput.value) || 1;
+    const maxVal = parseInt(quantityInput.max) || 999;
+    
+    if (currentVal < maxVal) {
+        quantityInput.value = currentVal + 1;
+        updateProductTotal();
+    }
+}
+
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('product_quantity');
+    const currentVal = parseInt(quantityInput.value) || 1;
+    
+    if (currentVal > 1) {
+        quantityInput.value = currentVal - 1;
+        updateProductTotal();
+    }
+}
+
+function updateProductTotal() {
+    // This function can be used to show real-time total if needed
+}
+
+// Update product count display
+function updateProductCount(count) {
+    document.getElementById('product_count').textContent = count;
+}
+
+function addProduct() {
+    if (!selectedProductId) {
+        alert('Please select a product first');
+        return;
+    }
+    
+    const product = allProducts.find(p => p.id === selectedProductId);
+    const quantity = parseInt(document.getElementById('product_quantity').value) || 1;
+    
+    if (!product || quantity <= 0) {
+        alert('Please select a valid product and quantity');
+        return;
+    }
+    
+    if (quantity > product.stock_quantity) {
+        alert(`Only ${product.stock_quantity} units available in stock`);
+        return;
+    }
+    
+    // Check if product already exists in cart
+    const existingProductIndex = products.findIndex(p => p.product_id === product.id);
+    
+    if (existingProductIndex !== -1) {
+        // Update existing product quantity
+        const newQuantity = products[existingProductIndex].quantity + quantity;
+        if (newQuantity > product.stock_quantity) {
+            alert(`Cannot add more. Total would exceed available stock (${product.stock_quantity})`);
+            return;
+        }
+        products[existingProductIndex].quantity = newQuantity;
+        products[existingProductIndex].total = products[existingProductIndex].price * newQuantity;
+    } else {
+        // Add new product
+        const productData = {
+            id: Date.now(), // Temporary ID for frontend
+            product_id: product.id,
+            name: product.name,
+            price: parseFloat(product.selling_price),
+            quantity: quantity,
+            total: parseFloat(product.selling_price) * quantity
+        };
+        products.push(productData);
+    }
+    
+    updateProductsTable();
+    clearSelection();
+    
+    // Show success message
+    const alertHTML = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>Product added to invoice!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert alert at top of product selection section
+    const productSection = document.querySelector('.col-lg-6 .card');
+    productSection.insertAdjacentHTML('beforebegin', alertHTML);
+    
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert-success');
+        if (alert) alert.remove();
+    }, 3000);
+}
+
+function clearSelection() {
+    selectedProductId = null;
+    document.getElementById('selected_product_details').classList.add('d-none');
+    document.getElementById('product_quantity').value = 1;
+}
+    clearProductForm();
+    calculateTotals();
+}
+
+function removeProduct(id) {
+    products = products.filter(p => p.id !== id);
+    updateProductsTable();
+    calculateTotals();
+}
+
+function updateProductsTable() {
+    const tbody = document.getElementById('products_list');
+    const noProducts = document.getElementById('no_products');
+
+    if (products.length === 0) {
+        noProducts.style.display = 'table-row';
+        return;
+    }
+
+    noProducts.style.display = 'none';
+    
+    tbody.innerHTML = products.map(product => 
+        `<tr>
+            <td>${product.name}</td>
+            <td>৳${product.price.toFixed(2)}</td>
+            <td>${product.quantity}</td>
+            <td>৳${product.total.toFixed(2)}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProduct(${product.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`
+    ).join('') + '<tr id="no_products" style="display: none;"><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-shopping-cart fa-2x mb-2 d-block"></i>No products added yet</td></tr>';
+}
+
+function clearProductForm() {
+    document.getElementById('product_search').value = '';
+    document.getElementById('product_price').value = '';
+    document.getElementById('product_quantity').value = '1';
+}
+
+function calculateTotals() {
+    const subtotal = products.reduce((sum, product) => sum + product.total, 0);
+    const discount = parseFloat(document.getElementById('discount_amount').value) || 0;
+    const finalTotal = subtotal - discount;
+
+    document.getElementById('subtotal_display').textContent = `৳${subtotal.toFixed(2)}`;
+    document.getElementById('final_total_display').textContent = `৳${finalTotal.toFixed(2)}`;
+    
+    document.getElementById('subtotal_hidden').value = subtotal;
+    document.getElementById('total_amount_hidden').value = finalTotal;
+
+    calculateInstallments();
+}
+
+function calculateInstallments() {
+    const finalTotal = parseFloat(document.getElementById('total_amount_hidden').value) || 0;
+    const paidAmount = parseFloat(document.getElementById('paid_amount').value) || 0;
+    const months = parseInt(document.getElementById('installment_months').value) || 1;
+    
+    const remainingAmount = finalTotal - paidAmount;
+    const monthlyAmount = remainingAmount / months;
+    
+    document.getElementById('monthly_amount').textContent = `৳${monthlyAmount.toFixed(2)}`;
+}
+
+function togglePaymentType() {
+    const installmentSection = document.getElementById('installment_section');
+    const isInstallment = document.getElementById('payment_installment').checked;
+    
+    installmentSection.style.display = isInstallment ? 'block' : 'none';
+    
+    if (isInstallment) {
+        calculateInstallments();
+    }
+}
+
+// Filter change handlers
+document.getElementById('filter_category').addEventListener('change', applyFilters);
+document.getElementById('filter_brand').addEventListener('change', applyFilters);
+document.getElementById('filter_model').addEventListener('input', debounce(applyFilters, 300));
+document.getElementById('price_min').addEventListener('input', debounce(applyFilters, 500));
+document.getElementById('price_max').addEventListener('input', debounce(applyFilters, 500));
+
+// Debounce function for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Form submission
+document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+    if (products.length === 0) {
+        e.preventDefault();
+        alert('Please add at least one product');
+        return;
+    }
+    
+    document.getElementById('products_data').value = JSON.stringify(products);
+});
+
+// Hide suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#product_search') && !e.target.closest('#product_suggestions')) {
+        document.getElementById('product_suggestions').style.display = 'none';
+    }
+});
+</script>
+@endsection
+                    
