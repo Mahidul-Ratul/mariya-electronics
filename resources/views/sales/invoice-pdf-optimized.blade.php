@@ -243,7 +243,7 @@
             </td>
             <td class="invoice-info-cell">
                 <strong>INVOICE NO:</strong> {{ $sale->sale_number }}<br>
-                <strong>DATE:</strong> {{ $sale->sale_date->format('d/m/Y') }}<br>
+                <strong>DATE:</strong> {{ $sale->sale_date instanceof \Carbon\Carbon ? $sale->sale_date->format('d/m/Y') : $sale->sale_date }}<br>
                 <strong>PAYMENT TYPE:</strong> <span class="payment-badge">{{ strtoupper($sale->payment_type) }}</span>
             </td>
         </tr>

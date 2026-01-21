@@ -341,7 +341,7 @@ class InstallmentSaleController extends Controller
             
         } catch (\Exception $e) {
             // Log the error and provide fallback
-            Log::error('Installment PDF generation error: ' . $e->getMessage());
+            error_log('Installment PDF generation error: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
             
             // Try with simple template as fallback
             try {
@@ -359,7 +359,7 @@ class InstallmentSaleController extends Controller
                          ->setPaper('A4', 'portrait');
                 return $pdf->download('installment-invoice-' . $installmentSale->installment_sale_number . '.pdf');
             } catch (\Exception $e2) {
-                Log::error('Installment PDF fallback failed: ' . $e2->getMessage());
+                error_log('Installment PDF fallback failed: ' . $e2->getMessage() . ' | File: ' . $e2->getFile() . ' | Line: ' . $e2->getLine());
                 return redirect()->back()->with('error', 'Unable to generate PDF. Please try again or contact support.');
             }
         }

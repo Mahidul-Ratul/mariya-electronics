@@ -507,8 +507,8 @@ class SaleController extends Controller
             return $pdf->download('invoice-' . $sale->sale_number . '.pdf');
             
         } catch (\Exception $e) {
-            // Log the error and provide fallback
-            Log::error('Sales PDF Generation Failed: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+            // Use error_log for production console visibility
+            error_log('Sales PDF Generation Failed: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
             
             // Try with minimal template as final fallback
             try {
@@ -526,7 +526,7 @@ class SaleController extends Controller
                          ->setPaper('A4', 'portrait');
                 return $pdf->download('invoice-' . $sale->sale_number . '.pdf');
             } catch (\Exception $e2) {
-                Log::error('Sales PDF Fallback Failed: ' . $e2->getMessage() . ' | File: ' . $e2->getFile() . ' | Line: ' . $e2->getLine());
+                error_log('Sales PDF Fallback Failed: ' . $e2->getMessage() . ' | File: ' . $e2->getFile() . ' | Line: ' . $e2->getLine());
                 return redirect()->back()->with('error', 'PDF generation is currently unavailable. Please try again later.');
             }
         }

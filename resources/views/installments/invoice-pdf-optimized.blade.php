@@ -325,7 +325,7 @@
             </td>
             <td class="invoice-info-cell">
                 <strong>INVOICE NO:</strong> {{ $installmentSale->installment_sale_number }}<br>
-                <strong>DATE:</strong> {{ \Carbon\Carbon::parse($installmentSale->sale_date)->format('d/m/Y') }}<br>
+                <strong>DATE:</strong> {{ $installmentSale->sale_date instanceof \Carbon\Carbon ? $installmentSale->sale_date->format('d/m/Y') : (\Carbon\Carbon::parse($installmentSale->sale_date)->format('d/m/Y')) }}<br>
                 <strong>PAYMENT TYPE:</strong> <span class="payment-badge">INSTALLMENT</span>
             </td>
         </tr>
@@ -518,7 +518,7 @@
             @foreach($installmentSchedule as $installment)
             <tr>
                 <td style="font-weight: 600; color: #2d3748;">{{ $installment['number'] }}</td>
-                <td>{{ $installment['due_date']->format('d M Y') }}</td>
+                <td>{{ $installment['due_date'] instanceof \Carbon\Carbon ? $installment['due_date']->format('d M Y') : \Carbon\Carbon::parse($installment['due_date'])->format('d M Y') }}</td>
                 <td style="font-weight: 600; color: #2d3748;">BDT {{ number_format($installment['amount'], 2) }}</td>
                 <td>
                     <span class="status-badge">{{ ucfirst($installment['status']) }}</span>
