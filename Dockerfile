@@ -17,19 +17,22 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # 4. Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# 5. Set working directory
 WORKDIR /var/www/html
 
-# 5. Copy application files
+# 6. Copy application files
 COPY . .
 
-# 6. Install PHP dependencies
+# 7. Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# 7. Set permissions for Laravel and the build script
+# 8. Set permissions for Laravel and the build script
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod +x /var/www/html/render-build.sh
 
-# 8. Expose port (Render uses 80 by default for Apache)
+# 9. Expose port 80
 EXPOSE 80
 
-# Apache starts automatically
+# 10. The Startup Command
+# This runs the migration script first, then starts Apache
+CMD ["/bin/sh", "-c", "/var/www/html/render-build.sh && apache2-foreground"]
