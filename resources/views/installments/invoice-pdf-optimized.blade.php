@@ -278,7 +278,13 @@
 <body>
     <!-- Watermark -->
     <div class="watermark">
-        <img src="{{ public_path('images/me_logo2.png') }}" style="width: 500px; height: 500px;" alt="ME Watermark">
+        @if($logoBase64)
+            <img src="{{ $logoBase64 }}" style="width: 500px; height: 500px;" alt="ME Watermark">
+        @else
+            <div style="width: 500px; height: 500px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 24px; border: 2px dashed #ddd;">
+                LOGO
+            </div>
+        @endif
     </div>
 
     <!-- PAGE 1: Invoice -->
@@ -286,7 +292,16 @@
     <table class="header-table">
         <tr>
             <td class="logo-cell">
-                <img src="{{ public_path('images/me_logo2.png') }}" style="height: 120px; width: auto;" alt="ME Logo">
+                @if($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height: 120px; width: auto;" alt="ME Logo">
+                @else
+                    <div style="width: 120px; height: 120px; background: #2d3748; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 8px; margin: 0 auto;">
+                        <div style="text-align: center; line-height: 1.2;">
+                            <div style="font-size: 18px;">ME</div>
+                            <div style="font-size: 10px;">LOGO</div>
+                        </div>
+                    </div>
+                @endif
             </td>
             <td class="contact-cell">
                 <strong>Mobile:</strong> 01711392676<br>
@@ -459,7 +474,13 @@
     <div class="page-break"></div>
     
     <div class="watermark">
-        <img src="{{ public_path('images/me_logo2.png') }}" style="width: 500px; height: 500px;" alt="ME Watermark">
+        @if($logoBase64)
+            <img src="{{ $logoBase64 }}" style="width: 500px; height: 500px;" alt="ME Watermark">
+        @else
+            <div style="width: 500px; height: 500px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 24px; border: 2px dashed #ddd;">
+                LOGO
+            </div>
+        @endif
     </div>
 
     <div class="schedule-header">

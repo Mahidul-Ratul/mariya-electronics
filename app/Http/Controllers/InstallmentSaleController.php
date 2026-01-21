@@ -302,6 +302,16 @@ class InstallmentSaleController extends Controller
             
             $installmentSale = $installment_sale;
             
+            // Convert images to Base64 for PDF generation
+            $logoBase64 = null;
+            $logoPath = public_path('images/me_logo2.png');
+            
+            if (file_exists($logoPath)) {
+                $logoData = file_get_contents($logoPath);
+                $logoMimeType = mime_content_type($logoPath) ?: 'image/png';
+                $logoBase64 = 'data:' . $logoMimeType . ';base64,' . base64_encode($logoData);
+            }
+            
             // Generate installment schedule
             $startDate = Carbon::parse($installmentSale->sale_date);
             $installmentSchedule = [];
@@ -317,7 +327,7 @@ class InstallmentSaleController extends Controller
             }
             
             // Use optimized PDF template
-            $pdf = PDF::loadView('installments.invoice-pdf-optimized', compact('installmentSale', 'installmentSchedule'))
+            $pdf = PDF::loadView('installments.invoice-pdf-optimized', compact('installmentSale', 'installmentSchedule', 'logoBase64'))
                      ->setPaper('A4', 'portrait')
                      ->setOptions([
                          'isRemoteEnabled' => true,
@@ -331,9 +341,27 @@ class InstallmentSaleController extends Controller
             
         } catch (\Exception $e) {
             // Log the error and provide fallback
-            Log::error('PDF generation error: ' . $e->getMessage());
+            Log::error('Installment PDF generation error: ' . $e->getMessage());
             
-            return redirect()->back()->with('error', 'Unable to generate PDF. Please try again or contact support.');
+            // Try with simple template as fallback
+            try {
+                // Convert logo to Base64 for fallback template as well
+                $logoBase64 = null;
+                $logoPath = public_path('images/me_logo2.png');
+                
+                if (file_exists($logoPath)) {
+                    $logoData = file_get_contents($logoPath);
+                    $logoMimeType = mime_content_type($logoPath) ?: 'image/png';
+                    $logoBase64 = 'data:' . $logoMimeType . ';base64,' . base64_encode($logoData);
+                }
+                
+                $pdf = PDF::loadView('installments.invoice', compact('installmentSale', 'installmentSchedule', 'logoBase64'))
+                         ->setPaper('A4', 'portrait');
+                return $pdf->download('installment-invoice-' . $installmentSale->installment_sale_number . '.pdf');
+            } catch (\Exception $e2) {
+                Log::error('Installment PDF fallback failed: ' . $e2->getMessage());
+                return redirect()->back()->with('error', 'Unable to generate PDF. Please try again or contact support.');
+            }
         }
     }
 }
