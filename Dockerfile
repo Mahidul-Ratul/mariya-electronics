@@ -1,9 +1,9 @@
 # Use PHP with Apache for easier setup
 FROM php:8.2-apache
 
-# 1. Install system dependencies
+# 1. Install system dependencies + ca-certificates for Aiven SSL
 RUN apt-get update && apt-get install -y \
-    git curl unzip libpq-dev libonig-dev libzip-dev zip \
+    git curl unzip libpq-dev libonig-dev libzip-dev zip ca-certificates \
     && docker-php-ext-install pdo pdo_mysql mbstring zip
 
 # 2. Enable Apache mod_rewrite for Laravel routing
@@ -25,10 +25,11 @@ COPY . .
 # 6. Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# 7. Set permissions for Laravel
+# 7. Set permissions for Laravel and the build script
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod +x /var/www/html/render-build.sh
 
-# 8. Expose port (Render uses 10000 or 80 usually)
+# 8. Expose port (Render uses 80 by default for Apache)
 EXPOSE 80
 
-# Apache starts automatically in the php-apache image
+# Apache starts automatically
