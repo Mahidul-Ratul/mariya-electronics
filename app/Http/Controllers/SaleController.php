@@ -483,8 +483,18 @@ class SaleController extends Controller
             
             $sale->load(['customer', 'product']);
             
+            // Convert images to Base64 for PDF generation
+            $logoBase64 = null;
+            $logoPath = public_path('images/me_logo2.png');
+            
+            if (file_exists($logoPath)) {
+                $logoData = file_get_contents($logoPath);
+                $logoMimeType = mime_content_type($logoPath) ?: 'image/png';
+                $logoBase64 = 'data:' . $logoMimeType . ';base64,' . base64_encode($logoData);
+            }
+            
             // Use optimized PDF template
-            $pdf = PDF::loadView('sales.invoice-pdf-optimized', compact('sale'))
+            $pdf = PDF::loadView('sales.invoice-pdf-optimized', compact('sale', 'logoBase64'))
                      ->setPaper('A4', 'portrait')
                      ->setOptions([
                          'isRemoteEnabled' => true,
@@ -502,7 +512,17 @@ class SaleController extends Controller
             
             // Try with minimal template as final fallback
             try {
-                $pdf = PDF::loadView('sales.invoice-pdf-minimal', compact('sale'))
+                // Convert logo to Base64 for fallback template as well
+                $logoBase64 = null;
+                $logoPath = public_path('images/me_logo2.png');
+                
+                if (file_exists($logoPath)) {
+                    $logoData = file_get_contents($logoPath);
+                    $logoMimeType = mime_content_type($logoPath) ?: 'image/png';
+                    $logoBase64 = 'data:' . $logoMimeType . ';base64,' . base64_encode($logoData);
+                }
+                
+                $pdf = PDF::loadView('sales.invoice-pdf-minimal', compact('sale', 'logoBase64'))
                          ->setPaper('A4', 'portrait');
                 return $pdf->download('invoice-' . $sale->sale_number . '.pdf');
             } catch (\Exception $e2) {
