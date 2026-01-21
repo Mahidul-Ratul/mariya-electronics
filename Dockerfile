@@ -30,9 +30,12 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod +x /var/www/html/render-build.sh
 
-# 9. Expose port 80
+# 9. Force Apache to bind to 0.0.0.0 (Public) instead of ::1 (Localhost)
+# This is the fix for the "No open ports detected" error
+RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
+
+# 10. Expose port 80
 EXPOSE 80
 
-# 10. The Startup Command
-# This runs the migration script first, then starts Apache
+# 11. The Startup Command
 CMD ["/bin/sh", "-c", "/var/www/html/render-build.sh && apache2-foreground"]
