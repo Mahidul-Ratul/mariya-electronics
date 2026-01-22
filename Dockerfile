@@ -23,8 +23,8 @@ WORKDIR /var/www/html
 # 6. Copy application files
 COPY . .
 
-# 7. Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# 7. Install PHP dependencies (CRITICAL: added flags to ignore DB)
+RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer install --no-dev --optimize-autoloader --no-scripts
 # 8. Set permissions for Laravel and the build script
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod +x /var/www/html/render-build.sh
