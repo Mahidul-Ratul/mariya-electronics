@@ -36,5 +36,5 @@ RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 # 10. Expose port 80
 EXPOSE 80
 
-# 11. The Startup Command
-CMD ["/bin/sh", "-c", "/var/www/html/render-build.sh && apache2-foreground"]
+# 11. The Startup Command (Runs on the LIVE server with full DNS access)
+CMD ["/bin/sh", "-c", "php artisan config:clear && php artisan migrate --force && apache2-foreground"]
