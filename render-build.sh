@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 set -o errexit
 
-echo "--- Starting Render Build Script ---"
+echo "--- 1. Optimizing Build (using SQLite bypass) ---"
 
-# 1. Install dependencies (Dummy DB connection to prevent DNS crash)
-DB_CONNECTION=sqlite DB_DATABASE=:memory: composer install --no-dev --optimize-autoloader
-
-# 2. Run discovery and caching (Dummy DB connection)
+# These commands are "blindfolded" so they don't look for Aiven during build
 DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan package:discover --ansi
 DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan config:cache
 DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan route:cache
 
-echo "--- Build Phase Complete. Starting Migration Phase ---"
+echo "--- 2. Running Migrations (using REAL MySQL) ---"
 
-# 3. Run migrations on REAL MySQL
-# This only runs if the DB_HOST is reachable (which it is at this stage of deployment)
+# We REMOVE the SQLite prefix here. 
+# This command will use the DB_CONNECTION=mysql from your Render Environment.
 php artisan migrate --force
