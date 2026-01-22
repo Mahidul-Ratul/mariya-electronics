@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
+# Exit on error
 set -o errexit
 
-echo "--- 1. Optimizing Build (using SQLite bypass) ---"
-
-# These commands are "blindfolded" so they don't look for Aiven during build
+echo "--- STEP 1: Setting up code (using SQLite bypass) ---"
+# We use SQLite here JUST to get past Render's networking block
 DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan package:discover --ansi
 DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan config:cache
 DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan route:cache
 
-echo "--- 2. Running Migrations (using REAL MySQL) ---"
+echo "--- STEP 2: Breaking the SQLite lock ---"
+# This deletes the "Use SQLite" instruction we just made
+php artisan config:clear
 
-# We REMOVE the SQLite prefix here. 
-# This command will use the DB_CONNECTION=mysql from your Render Environment.
+echo "--- STEP 3: Running Migrations (using REAL Aiven MySQL) ---"
+# Now Laravel will read your REAL Render Environment Variables
 php artisan migrate --force
