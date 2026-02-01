@@ -36,5 +36,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 EXPOSE 80
 
-# 8. STARTUP COMMAND
-CMD ["/bin/sh", "-c", "php artisan config:clear && (apache2-foreground &) && sleep 30 && php artisan migrate --force && wait"]
+# 8. Optimized Startup
+# We start Apache FIRST and remove the long sleep. 
+# We run migrations in the background so the website doesn't wait for them to load.
+CMD ["/bin/sh", "-c", "php artisan config:cache && php artisan view:cache && (apache2-foreground &) && sleep 5 && php artisan migrate --force && wait"]
