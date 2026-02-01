@@ -9,25 +9,41 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+  public function up(): void
 {
-    // Block 1: Add the first anchor column alone
+    // Add columns one by one to satisfy TiDB's strict schema requirements
     Schema::table('sales', function (Blueprint $table) {
         $table->string('customer_name')->nullable()->after('customer_id');
     });
 
-    // Block 2: Add the rest of the new columns
     Schema::table('sales', function (Blueprint $table) {
         $table->text('customer_address')->nullable()->after('customer_name');
+    });
+
+    Schema::table('sales', function (Blueprint $table) {
         $table->string('customer_mobile')->nullable()->after('customer_address');
+    });
+
+    Schema::table('sales', function (Blueprint $table) {
         $table->string('guarantor_name')->nullable()->after('customer_mobile');
+    });
+
+    Schema::table('sales', function (Blueprint $table) {
         $table->string('guarantor_mobile')->nullable()->after('guarantor_name');
+    });
+
+    Schema::table('sales', function (Blueprint $table) {
         $table->json('products_data')->nullable()->after('product_id');
+    });
+
+    Schema::table('sales', function (Blueprint $table) {
         $table->decimal('paid_amount', 10, 2)->default(0)->after('total_amount');
+    });
+
+    Schema::table('sales', function (Blueprint $table) {
         $table->integer('installment_months')->nullable()->after('paid_amount');
     });
 
-    // Block 3: Modify the existing column (Separated to prevent TiDB conflict)
     Schema::table('sales', function (Blueprint $table) {
         $table->unsignedBigInteger('product_id')->nullable()->change();
     });
