@@ -38,6 +38,9 @@ RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 # 11. Expose port 80
 EXPOSE 80
 
-# 12. The Startup Command
-# We added a 10-second sleep to ensure Render's network is fully active
-CMD ["/bin/sh", "-c", "sleep 10 && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && apache2-foreground"]
+# 12. The Robust Startup Command
+# 1. Start Apache in the background
+# 2. Wait 30 seconds for the network to be 100% ready
+# 3. Run migrations
+# 4. Bring Apache back to the foreground
+CMD apache2-foreground & sleep 30 && php artisan migrate --force && wait
