@@ -20,6 +20,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
+# --- FIX START ---
+# Ensure the certs folder exists and has the right permissions 
+# (This must come AFTER 'COPY . .')
+RUN mkdir -p /var/www/html/certs && chmod -R 755 /var/www/html/certs
+# --- FIX END ---
+
 # 5. Install Dependencies (Using sqlite bypass to avoid DB check during build)
 RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer install --no-dev --optimize-autoloader
 
@@ -30,7 +36,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 EXPOSE 80
 
-# 8. THE FINAL STABILITY FIX: 
-# This starts Apache immediately so the 502 error goes away, 
-# then waits 30 seconds for the internet/DNS to wake up before migrating.
+# 8. STARTUP COMMAND
 CMD ["/bin/sh", "-c", "php artisan config:clear && (apache2-foreground &) && sleep 30 && php artisan migrate --force && wait"]
