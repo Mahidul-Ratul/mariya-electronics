@@ -9,29 +9,29 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('sales', function (Blueprint $table) {
-            // Customer information fields
-            $table->string('customer_name')->nullable()->after('customer_id');
-            $table->text('customer_address')->nullable()->after('customer_name');
-            $table->string('customer_mobile')->nullable()->after('customer_address');
-            
-            // Guarantor information
-            $table->string('guarantor_name')->nullable()->after('customer_mobile');
-            $table->string('guarantor_mobile')->nullable()->after('guarantor_name');
-            
-            // Multi-product support (storing as JSON)
-            $table->json('products_data')->nullable()->after('product_id');
-            
-            // Installment payment details
-            $table->decimal('paid_amount', 10, 2)->default(0)->after('total_amount');
-            $table->integer('installment_months')->nullable()->after('paid_amount');
-            
-            // Make original product_id nullable since we now support multiple products
-            $table->unsignedBigInteger('product_id')->nullable()->change();
-        });
-    }
+   public function up(): void
+{
+    // Block 1: Add the first anchor column alone
+    Schema::table('sales', function (Blueprint $table) {
+        $table->string('customer_name')->nullable()->after('customer_id');
+    });
+
+    // Block 2: Add the rest of the new columns
+    Schema::table('sales', function (Blueprint $table) {
+        $table->text('customer_address')->nullable()->after('customer_name');
+        $table->string('customer_mobile')->nullable()->after('customer_address');
+        $table->string('guarantor_name')->nullable()->after('customer_mobile');
+        $table->string('guarantor_mobile')->nullable()->after('guarantor_name');
+        $table->json('products_data')->nullable()->after('product_id');
+        $table->decimal('paid_amount', 10, 2)->default(0)->after('total_amount');
+        $table->integer('installment_months')->nullable()->after('paid_amount');
+    });
+
+    // Block 3: Modify the existing column (Separated to prevent TiDB conflict)
+    Schema::table('sales', function (Blueprint $table) {
+        $table->unsignedBigInteger('product_id')->nullable()->change();
+    });
+}
 
     /**
      * Reverse the migrations.
