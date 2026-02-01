@@ -36,10 +36,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 EXPOSE 80
 
-# 8. THE FINAL STABILITY FIX:
-# This runs the setup commands and then keeps Apache in the FOREGROUND.
-# Using 'exec' ensures Apache receives shutdown signals correctly from Render.
+# We use migrate:fresh to delete the "broken" tables and create them correctly.
 CMD php artisan config:cache && \
     php artisan view:cache && \
-    php artisan migrate --force && \
+    php artisan migrate:fresh --force && \
     exec apache2-foreground
