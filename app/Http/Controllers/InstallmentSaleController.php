@@ -188,7 +188,7 @@ class InstallmentSaleController extends Controller
             }
         }
 
-        return redirect()->route('installment-sales.index')
+        return redirect()->route('installment-sales.show', $installmentSale->id)
             ->with('success', "Installment sale {$installmentSaleNumber} created successfully!");
     }
 

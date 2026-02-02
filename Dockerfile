@@ -41,4 +41,5 @@ EXPOSE 80
 CMD php artisan config:cache && \
     php artisan view:cache && \
     php artisan migrate --force && \
+    php artisan db:seed --class=DefaultUserSeeder --force && \
     exec apache2-foreground
