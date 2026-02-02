@@ -37,7 +37,8 @@ RUN sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 EXPOSE 80
 
 # We use migrate:fresh to delete the "broken" tables and create them correctly.
+# ✅ TO THIS:
 CMD php artisan config:cache && \
     php artisan view:cache && \
-    php artisan migrate:fresh --force && \
+    php artisan migrate --force && \
     exec apache2-foreground
